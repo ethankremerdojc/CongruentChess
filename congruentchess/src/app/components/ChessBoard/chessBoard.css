@@ -1,0 +1,38 @@
+.black-square {
+    background-color: rgb(87, 44, 17);
+}
+
+.white-square {
+    background-color: rgb(205 146 109);
+}
+
+.chessboard {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    width: 500px;
+    border: 2px solid black;
+  }
+  
+  .black-square, .white-square {
+    width: 100%;
+    padding-top: 100%; /* This makes the square a perfect square */
+    position: relative;
+  }
+  
+  .piece {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .piece img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+
+  .piece img:active {
+    cursor: grabbing;
+  }
