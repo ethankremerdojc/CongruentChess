@@ -9,17 +9,13 @@ export const INDEX_TO_LETTER = {
     7: "h",
 };
 
-export const DEFAULT_BOARD = [
-    ["", "", "bp", "", "", "", "", ""],
-    ["", "", "", "", "", "bp", "", ""],
-    ["", "", "", "", "", "", "", ""],
-    ["", "", "", "", "", "", "", ""],
-    ["", "", "", "", "", "", "", ""],
-    ["", "", "", "", "", "", "", ""],
-    ["wp", "", "", "wp", "", "", "", ""],
-    ["", "", "", "", "", "", "", ""],
-];
+export const DEFAULT_BOARD_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 
 export const PIECE_FOR_LETTER = {
     "p": "pawn",
+    "r": "rook",
+    "n": "knight",
+    "b": "bishop",
+    "q": "queen",
+    "k": "king"
 }

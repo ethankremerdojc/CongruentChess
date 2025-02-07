@@ -6,6 +6,11 @@
     background-color: rgb(205 146 109);
 }
 
+.highlighted-square {
+  outline: solid 2px yellow;
+  z-index: 2;
+}
+
 .chessboard {
     display: grid;
     grid-template-columns: repeat(8, 1fr);
