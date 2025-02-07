@@ -96,6 +96,7 @@ export default function ChessBoard() {
                 piece={piece}
                 isHighlighted={isHighlighted}
                 board={board}
+                key={i}
                 onClick={() => {
                     if (selectedPosition && isHighlighted) {
                         movePiece(board, selectedPosition, [x, y], setGameState, playerTurn, setPlayerTurn);

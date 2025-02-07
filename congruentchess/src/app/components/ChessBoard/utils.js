@@ -44,6 +44,8 @@ export function encodeBoardToFen(board) {
     return fen;
 }
 
+// stop player from crossing over their own pieces
+
 export function getLegalMoves(pieceType, color, position) {
     console.log(pieceType, color, position);
     switch (pieceType) {
