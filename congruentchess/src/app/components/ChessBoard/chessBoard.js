@@ -5,7 +5,6 @@ import { DEFAULT_BOARD_FEN, PIECE_FOR_LETTER } from './config';
 import { getLegalMoves, decodeFenToBoard, encodeBoardToFen } from './utils';
 
 const Piece = ({ pieceType, color, onSelect }) => {
-
     return (
         <div className="piece" draggable onClick={() => onSelect()} >
             <img src={`/pieces/${color}/${pieceType}.png`} alt={`${color}`} />
@@ -36,10 +35,9 @@ function movePiece(board, from, to, setGameState, playerTurn, setPlayerTurn) {
     newBoard[fromY][fromX] = null;
 
     setGameState(encodeBoardToFen(newBoard));
-    setPlayerTurn((playerTurn) => (playerTurn === "white" ? "black" : "white"));
+    setPlayerTurn(playerTurn === "white" ? "black" : "white");
 }
 
-// console.log(`Legal moves for ${color} ${piece} at ${position}:`, legalMoves);
 function selectPiece(piece, color, position, setHighlightedSquares, setSelectedPosition) {
     const legalMoves = getLegalMoves(piece, color, position);
     setHighlightedSquares(legalMoves);
@@ -47,10 +45,12 @@ function selectPiece(piece, color, position, setHighlightedSquares, setSelectedP
 }
 
 export default function ChessBoard() {
+
     const [gameState, setGameState] = useState(DEFAULT_BOARD_FEN);
     const [highlightedSquares, setHighlightedSquares] = useState([]);
     const [selectedPosition, setSelectedPosition] = useState(null);
     const [playerTurn, setPlayerTurn] = useState("white");
+
     const board = decodeFenToBoard(gameState);
 
     const renderSquare = (i) => {
@@ -110,7 +110,6 @@ export default function ChessBoard() {
 
     return (
         <div>
-
             <div className="chessboard">
                 {Array.from({ length: 64 }, (_, i) => renderSquare(i))}
             </div>

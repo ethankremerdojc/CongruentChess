@@ -44,7 +44,8 @@ export function encodeBoardToFen(board) {
     return fen;
 }
 
-// stop player from crossing over their own pieces
+// stop player from crossing over their own pieces, these should be disallowed
+// since the user would never want to do this
 
 export function getLegalMoves(pieceType, color, position) {
     console.log(pieceType, color, position);
