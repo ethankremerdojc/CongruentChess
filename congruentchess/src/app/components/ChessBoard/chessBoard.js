@@ -7,7 +7,7 @@ import useWebSocket from "../../hooks/useWebsocket";
 
 const Piece = ({ pieceType, color, onSelect }) => {
     return (
-        <div className="piece" draggable onClick={() => onSelect()} >
+        <div className="piece" draggable onClick={() => onSelect()} onTouchStart={() => onSelect()} >
             <img src={`/pieces/${color}/${pieceType}.png`} alt={`${color}`} />
         </div>
     );
@@ -144,6 +144,7 @@ export default function ChessBoard() {
                 board={board}
                 key={i}
                 onClick={() => { attemptPieceMove() }}
+                onTouchStart={() => { attemptPieceMove() }}
             />
         );
     };
