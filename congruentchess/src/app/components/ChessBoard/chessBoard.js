@@ -40,7 +40,6 @@ function movePiece(board, from, to) {
 }
 
 function selectPiece(piece, color, position, setHighlightedSquares, setSelectedPosition) {
-    console.log("Selecting pieces")
     const legalMoves = getLegalMoves(piece, color, position);
     setHighlightedSquares(legalMoves);
     setSelectedPosition(position)
@@ -54,6 +53,19 @@ export default function ChessBoard() {
     const [playerTurn, setPlayerTurn] = useState("white");
 
     const board = decodeFenToBoard(gameState);
+
+    // -- WebSocket --
+
+    const { messages, sendMessage } = useWebSocket("ws://localhost:8000/ws");
+
+    const verifyMove = (message) => {
+        if (message.trim() !== "") {
+            sendMessage(message);
+            setMessage("");
+        }
+    };
+
+    // -- Render --
 
     const renderSquare = (i) => {
         const x = i % 8;
@@ -105,6 +117,9 @@ export default function ChessBoard() {
             }
 
             if (selectedPosition && isHighlighted) {
+
+                sendMessage(`${gameState}, (${selectedPosition}), (${[x, y]})`);
+
                 let newBoard = movePiece(board, selectedPosition, [x, y]);
                 setGameState(encodeBoardToFen(newBoard));
                 setPlayerTurn(playerTurn === "white" ? "black" : "white");
