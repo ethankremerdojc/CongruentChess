@@ -118,7 +118,7 @@ export default function ChessBoard() {
 
             if (selectedPosition && isHighlighted) {
 
-                sendMessage(`${gameState}, (${selectedPosition}), (${[x, y]})`);
+                sendMessage(`${gameState}|${selectedPosition}|${[x, y]}`);
 
                 let newBoard = movePiece(board, selectedPosition, [x, y]);
                 setGameState(encodeBoardToFen(newBoard));
