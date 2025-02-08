@@ -5,9 +5,9 @@ import { DEFAULT_BOARD_FEN, PIECE_FOR_LETTER, SERVER_URL } from './config';
 import { getLegalMoves, decodeFenToBoard, encodeBoardToFen } from './utils';
 import useWebSocket from "../../hooks/useWebsocket";
 
-const Piece = ({ pieceType, color, onSelect }) => {
+const Piece = ({ pieceType, color }) => {
     return (
-        <div className="piece" draggable onClick={() => onSelect()} onTouchEnd={() => onSelect()} >
+        <div className="piece">
             <img src={`/pieces/${color}/${pieceType}.png`} alt={`${color}`} />
         </div>
     );
@@ -60,6 +60,8 @@ export default function ChessBoard() {
     const [selectedPosition, setSelectedPosition] = useState(null);
     const [playerTurn, setPlayerTurn] = useState("white");
 
+    const [handlingClick, setHandlingClick] = useState(false);
+
     const board = decodeFenToBoard(gameState);
 
     // -- WebSocket --
@@ -110,21 +112,35 @@ export default function ChessBoard() {
                     pieceType={pieceRank}
                     color={pieceColor}
                     position={position}
-                    onSelect={() => {
-                        console.log("Triggering onselect");
-                        if (pieceColor === playerTurn) {
-                            selectPiece(pieceRank, pieceColor, position, setHighlightedSquares, setSelectedPosition)
-                        }
-                    }}
+                    pieceSelected={selectedPosition ? true : false}
                 />
             );
         }
 
-        const attemptPieceMove = () => {
+        const handleSquareClick = (piece) => {
+            if (handlingClick) {
+                return;
+            }
 
+            setHandlingClick(true);
+            console.log("Handling click");
+
+            if (piece && piece.props.color === playerTurn) {
+                selectPiece(piece.props.pieceType, piece.props.color, piece.props.position, setHighlightedSquares, setSelectedPosition)
+            } else {
+                attemptPieceMove();
+            }
+
+            setHandlingClick(false);
+        }
+
+        const attemptPieceMove = () => {
+            
             if (!selectedPosition) {
                 return;
             }
+
+            console.log("Attempting piece move");
 
             if (!isHighlighted) {
                 setHighlightedSquares([]);
@@ -144,8 +160,8 @@ export default function ChessBoard() {
                 isHighlighted={isHighlighted}
                 board={board}
                 key={i}
-                onClick={() => { attemptPieceMove() }}
-                onTouchEnd={() => { attemptPieceMove() }}
+                onClick={() => { handleSquareClick(piece) }}
+                onTouchEnd={() => { handleSquareClick(piece) }}
             />
         );
     };
