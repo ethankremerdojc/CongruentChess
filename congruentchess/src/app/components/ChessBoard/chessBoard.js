@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './chessBoard.css';
 import { DEFAULT_BOARD_FEN, PIECE_FOR_LETTER, SERVER_URL } from './config';
 import { getLegalMoves, decodeFenToBoard, encodeBoardToFen } from './utils';
@@ -57,12 +57,15 @@ export default function ChessBoard() {
 
     const { messages, sendMessage } = useWebSocket(`ws://${SERVER_URL}:8000/ws`);
 
-    const verifyMove = (message) => {
-        if (message.trim() !== "") {
-            sendMessage(message);
-            setMessage("");
-        }
-    };
+    useEffect(() => {
+        const FEN = messages[messages.length - 1];
+        console.log(`Received message: ${FEN}`);
+
+        setGameState(FEN);
+        setPlayerTurn(playerTurn === "white" ? "black" : "white");
+        setHighlightedSquares([]);
+        setSelectedPosition(null);
+    },[messages])
 
     // -- Render --
 
@@ -116,14 +119,7 @@ export default function ChessBoard() {
             }
 
             if (selectedPosition && isHighlighted) {
-
                 sendMessage(`${gameState}|${selectedPosition}|${[x, y]}`);
-
-                let newBoard = movePiece(board, selectedPosition, [x, y]);
-                setGameState(encodeBoardToFen(newBoard));
-                setPlayerTurn(playerTurn === "white" ? "black" : "white");
-                setHighlightedSquares([]);
-                setSelectedPosition(null);
             }
         }
 
