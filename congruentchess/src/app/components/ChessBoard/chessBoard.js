@@ -3,7 +3,8 @@ import React, { useState } from 'react';
 import './chessBoard.css';
 import { DEFAULT_BOARD_FEN, PIECE_FOR_LETTER } from './config';
 import { getLegalMoves, decodeFenToBoard, encodeBoardToFen } from './utils';
-import useWebSocket from "/src/app/hooks/useWebSocket";
+import useWebSocket from "../../hooks/useWebsocket";
+import SERVER_URL from "../../config";
 
 
 const Piece = ({ pieceType, color, onSelect }) => {
@@ -56,7 +57,7 @@ export default function ChessBoard() {
 
     // -- WebSocket --
 
-    const { messages, sendMessage } = useWebSocket("ws://localhost:8000/ws");
+    const { messages, sendMessage } = useWebSocket(`ws://${SERVER_URL}:8000/ws`);
 
     const verifyMove = (message) => {
         if (message.trim() !== "") {

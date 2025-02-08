@@ -1,8 +1,9 @@
 import { useState } from "react";
-import useWebSocket from "/src/app/hooks/useWebSocket";
+import useWebSocket from "../../hooks/useWebsocket";
+import SERVER_URL from "../../config";
 
 const ChatComponent = () => {
-    const { messages, sendMessage } = useWebSocket("ws://localhost:8000/ws");
+    const { messages, sendMessage } = useWebSocket(`ws://${SERVER_URL}:8000/ws`);
     const [message, setMessage] = useState("");
 
     const handleSend = () => {
