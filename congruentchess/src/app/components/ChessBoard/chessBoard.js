@@ -3,6 +3,8 @@ import React, { useState } from 'react';
 import './chessBoard.css';
 import { DEFAULT_BOARD_FEN, PIECE_FOR_LETTER } from './config';
 import { getLegalMoves, decodeFenToBoard, encodeBoardToFen } from './utils';
+import useWebSocket from "/src/app/hooks/useWebSocket";
+
 
 const Piece = ({ pieceType, color, onSelect }) => {
     return (
@@ -26,7 +28,7 @@ const Square = ({ black, piece, isHighlighted, onClick }) => {
     );
 };
 
-function movePiece(board, from, to, setGameState, playerTurn, setPlayerTurn) {
+function movePiece(board, from, to) {
     const newBoard = board.map((row) => [...row]);
     const [fromX, fromY] = from;
     const [toX, toY] = to;
@@ -34,11 +36,11 @@ function movePiece(board, from, to, setGameState, playerTurn, setPlayerTurn) {
     newBoard[toY][toX] = newBoard[fromY][fromX];
     newBoard[fromY][fromX] = null;
 
-    setGameState(encodeBoardToFen(newBoard));
-    setPlayerTurn(playerTurn === "white" ? "black" : "white");
+    return newBoard
 }
 
 function selectPiece(piece, color, position, setHighlightedSquares, setSelectedPosition) {
+    console.log("Selecting pieces")
     const legalMoves = getLegalMoves(piece, color, position);
     setHighlightedSquares(legalMoves);
     setSelectedPosition(position)
@@ -90,6 +92,27 @@ export default function ChessBoard() {
             );
         }
 
+        const attemptPieceMove = () => {
+
+            if (!selectedPosition) {
+                return;
+            }
+
+            if (!isHighlighted) {
+                setHighlightedSquares([]);
+                setSelectedPosition(null);
+                return;
+            }
+
+            if (selectedPosition && isHighlighted) {
+                let newBoard = movePiece(board, selectedPosition, [x, y]);
+                setGameState(encodeBoardToFen(newBoard));
+                setPlayerTurn(playerTurn === "white" ? "black" : "white");
+                setHighlightedSquares([]);
+                setSelectedPosition(null);
+            }
+        }
+
         return (
             <Square
                 black={isBlack}
@@ -97,13 +120,7 @@ export default function ChessBoard() {
                 isHighlighted={isHighlighted}
                 board={board}
                 key={i}
-                onClick={() => {
-                    if (selectedPosition && isHighlighted) {
-                        movePiece(board, selectedPosition, [x, y], setGameState, playerTurn, setPlayerTurn);
-                        setHighlightedSquares([]);
-                        setSelectedPosition(null);
-                    }
-                }}
+                onClick={() => { attemptPieceMove() }}
             />
         );
     };
