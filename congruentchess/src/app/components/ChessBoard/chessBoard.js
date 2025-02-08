@@ -44,6 +44,15 @@ function selectPiece(piece, color, position, setHighlightedSquares, setSelectedP
     setSelectedPosition(position)
 }
 
+const countChars = (str, char) => {
+
+    if (str === undefined) {
+        return 0;
+    }
+
+    return str.split(char).length - 1;
+}
+
 export default function ChessBoard() {
 
     const [gameState, setGameState] = useState(DEFAULT_BOARD_FEN);
@@ -60,6 +69,10 @@ export default function ChessBoard() {
     useEffect(() => {
         const FEN = messages[messages.length - 1];
         console.log(`Received message: ${FEN}`);
+
+        if (countChars(FEN, "/") !== 7) {
+            return;
+        }
 
         setGameState(FEN);
         setPlayerTurn(playerTurn === "white" ? "black" : "white");
