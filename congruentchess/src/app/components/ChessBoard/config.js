@@ -19,3 +19,5 @@ export const PIECE_FOR_LETTER = {
     "q": "queen",
     "k": "king"
 }
+
+export const SERVER_URL = "ec2-3-237-14-100.compute-1.amazonaws.com";
