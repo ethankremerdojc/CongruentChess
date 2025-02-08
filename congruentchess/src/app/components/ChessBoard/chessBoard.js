@@ -111,6 +111,7 @@ export default function ChessBoard() {
                     color={pieceColor}
                     position={position}
                     onSelect={() => {
+                        console.log("Triggering onselect");
                         if (pieceColor === playerTurn) {
                             selectPiece(pieceRank, pieceColor, position, setHighlightedSquares, setSelectedPosition)
                         }
