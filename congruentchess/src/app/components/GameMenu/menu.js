@@ -6,7 +6,7 @@ import { SERVER_URL } from '@/app/components/ChessBoard/config';
 
 export default function Menu() {
 
-    const { messages, sendMessage } = useWebSocket(`ws://${SERVER_URL}:8000/ws`);
+    const { messages, sendMessage } = useWebSocket(`ws://${SERVER_URL}:8001/ws`);
 
     useEffect(() => {
         const latestMessage = messages[messages.length - 1];
@@ -19,7 +19,7 @@ export default function Menu() {
 
     const createGame = () => {
         console.log("Creating game")
-        sendMessage("NEWGAME|15sec");
+        sendMessage("NEWGAME|15sec|anonymous");
     }
 
     return (

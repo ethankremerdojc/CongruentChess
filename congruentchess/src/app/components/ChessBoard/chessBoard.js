@@ -70,7 +70,7 @@ export default function ChessBoard() {
 
     // -- WebSocket --
 
-    const { messages, sendMessage } = useWebSocket(`ws://${SERVER_URL}:8000/ws`);
+    const { messages, sendMessage } = useWebSocket(`ws://${SERVER_URL}:8001/ws`);
 
     useEffect(() => {
         const latestMessage = messages[messages.length - 1];
