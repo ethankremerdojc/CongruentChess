@@ -12,6 +12,7 @@ const useWebSocket = (url) => {
         };
 
         ws.onmessage = (event) => {
+            console.log("Received: ", event.data);
             setMessages((prevMessages) => [...prevMessages, event.data]);
         };
 

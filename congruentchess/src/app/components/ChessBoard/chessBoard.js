@@ -53,6 +53,10 @@ const countChars = (str, char) => {
     return str.split(char).length - 1;
 }
 
+const isFEN = (str) => {
+    return countChars(str, "/") === 7;
+}
+
 export default function ChessBoard() {
 
     const [gameState, setGameState] = useState(DEFAULT_BOARD_FEN);
@@ -69,14 +73,14 @@ export default function ChessBoard() {
     const { messages, sendMessage } = useWebSocket(`ws://${SERVER_URL}:8000/ws`);
 
     useEffect(() => {
-        const FEN = messages[messages.length - 1];
-        console.log(`Received message: ${FEN}`);
+        const latestMessage = messages[messages.length - 1];
+        if (!latestMessage) {return}
 
-        if (countChars(FEN, "/") !== 7) {
+        if (!isFEN(latestMessage)) {
             return;
         }
 
-        setGameState(FEN);
+        setGameState(latestMessage);
         setPlayerTurn(playerTurn === "white" ? "black" : "white");
         setHighlightedSquares([]);
         setSelectedPosition(null);
