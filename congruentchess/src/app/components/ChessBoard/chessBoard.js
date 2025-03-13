@@ -27,17 +27,6 @@ const Square = ({ black, piece, isHighlighted, onClick }) => {
     );
 };
 
-function movePiece(board, from, to) {
-    const newBoard = board.map((row) => [...row]);
-    const [fromX, fromY] = from;
-    const [toX, toY] = to;
-
-    newBoard[toY][toX] = newBoard[fromY][fromX];
-    newBoard[fromY][fromX] = null;
-
-    return newBoard
-}
-
 function selectPiece(piece, color, position, setHighlightedSquares, setSelectedPosition) {
     const legalMoves = getLegalMoves(piece, color, position);
     setHighlightedSquares(legalMoves);
@@ -127,10 +116,15 @@ export default function ChessBoard() {
             }
 
             setHandlingClick(true);
-            console.log("Handling click");
 
             if (piece && piece.props.color === playerTurn) {
-                selectPiece(piece.props.pieceType, piece.props.color, piece.props.position, setHighlightedSquares, setSelectedPosition)
+                selectPiece(
+                    piece.props.pieceType, 
+                    piece.props.color, 
+                    piece.props.position, 
+                    setHighlightedSquares, 
+                    setSelectedPosition
+                ) // could probably just pass in the piece object
             } else {
                 attemptPieceMove();
             }
@@ -143,8 +137,6 @@ export default function ChessBoard() {
             if (!selectedPosition) {
                 return;
             }
-
-            console.log("Attempting piece move");
 
             if (!isHighlighted) {
                 setHighlightedSquares([]);
