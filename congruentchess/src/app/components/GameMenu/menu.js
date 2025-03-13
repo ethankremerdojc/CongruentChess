@@ -6,7 +6,7 @@ import { SERVER_URL } from '@/app/components/ChessBoard/config';
 
 export default function Menu() {
 
-    const { messages, sendMessage } = useWebSocket(`ws://${SERVER_URL}:8001/ws`);
+    const { messages, sendMessage } = useWebSocket(`ws://${SERVER_URL}:8000/ws`);
 
     useEffect(() => {
         const latestMessage = messages[messages.length - 1];

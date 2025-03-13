@@ -12,7 +12,7 @@ export default function Home() {
   Display a list of open games and their time formats for users to select and join.
   `
 
-  const [view, setView] = useState("menu");
+  const [view, setView] = useState("game");
 
   return (
     <div className={styles.page}>
