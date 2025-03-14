@@ -48,7 +48,6 @@ export function encodeBoardToFen(board) {
 // since the user would never want to do this
 
 export function getLegalMoves(pieceType, color, position) {
-    console.log(pieceType, color, position);
     switch (pieceType) {
         case "pawn":
             return getLegalPawnMoves(color, position);
@@ -186,4 +185,15 @@ function getLegalKingMoves(position) {
     }
 
     return legalMoves;
+}
+
+
+
+export function getGameIDFromAnchor() {
+    const anchor = window.location.hash;
+    if (anchor.length < 2) {
+        return null;
+    }
+
+    return anchor.substring(1);
 }

@@ -2,8 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import './chessBoard.css';
 import { DEFAULT_BOARD_FEN, PIECE_FOR_LETTER, SERVER_URL } from './config';
-import { getLegalMoves, decodeFenToBoard, encodeBoardToFen } from './utils';
-import useWebSocket from "../../hooks/useWebsocket";
+import { getLegalMoves, decodeFenToBoard, getGameIDFromAnchor, encodeBoardToFen } from './utils';
 
 const Piece = ({ pieceType, color }) => {
     return (
@@ -33,49 +32,67 @@ function selectPiece(piece, color, position, setHighlightedSquares, setSelectedP
     setSelectedPosition(position)
 }
 
-const countChars = (str, char) => {
-
-    if (str === undefined) {
-        return 0;
-    }
-
-    return str.split(char).length - 1;
-}
-
-const isFEN = (str) => {
-    return countChars(str, "/") === 7;
-}
-
-export default function ChessBoard() {
+export default function ChessBoard({ userID }) {
 
     const [gameState, setGameState] = useState(DEFAULT_BOARD_FEN);
     const [highlightedSquares, setHighlightedSquares] = useState([]);
     const [selectedPosition, setSelectedPosition] = useState(null);
     const [playerTurn, setPlayerTurn] = useState("white");
-
     const [handlingClick, setHandlingClick] = useState(false);
-
     const board = decodeFenToBoard(gameState);
+    const GAME_ID = getGameIDFromAnchor();
 
-    // -- WebSocket --
+    // websockets stuffs
+    const [messages, setMessages] = useState([]);
+    const [ws, setWS] = useState(null);
+    const [initialized, setInitialized] = useState(false);
+    
+    if (ws) {
+        ws.onopen = (event) => {
+            console.log("Opened connection");
+        };
+    
+        ws.onmessage = function (event) {
+            setMessages([...messages, event.data]);
+        };
 
-    const { messages, sendMessage } = useWebSocket(`ws://${SERVER_URL}:8000/ws`);
+        ws.onclose = () => {
+            console.log("WebSocket disconnected...");
+            // setTimeout(() => ws = new WebSocket(`ws://${SERVER_URL}/ws/${GAME_ID}`), 2000);
+        };
+    }
+
+    const sendMessage = (message) => {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+            ws.send(message);
+        }
+    };
+
+    if (initialized === false) {
+        setInitialized(true);
+        setTimeout(() => {
+            const ws = new WebSocket(`ws://${SERVER_URL}:8000/ws/${GAME_ID}`);
+            setWS(ws);
+        }, 100);
+    }
 
     useEffect(() => {
+
+        if (!initialized) {return}
+
         const latestMessage = messages[messages.length - 1];
         if (!latestMessage) {return}
+        console.log(latestMessage);
 
-        if (!isFEN(latestMessage)) {
-            return;
+        let game = JSON.parse(latestMessage);
+
+        if (game.board_state) {
+            setGameState(game.board_state);
+            setPlayerTurn(game.turn);
+            setHighlightedSquares([]);
+            setSelectedPosition(null);
         }
-
-        setGameState(latestMessage);
-        setPlayerTurn(playerTurn === "white" ? "black" : "white");
-        setHighlightedSquares([]);
-        setSelectedPosition(null);
     },[messages])
-
-    // -- Render --
 
     const renderSquare = (i) => {
         const x = i % 8;
@@ -138,6 +155,8 @@ export default function ChessBoard() {
                 return;
             }
 
+            console.log(selectedPosition, isHighlighted);
+
             if (!isHighlighted) {
                 setHighlightedSquares([]);
                 setSelectedPosition(null);
@@ -145,7 +164,14 @@ export default function ChessBoard() {
             }
 
             if (selectedPosition && isHighlighted) {
-                sendMessage(`${gameState}|${selectedPosition}|${[x, y]}`);
+                console.log("Sending move")
+                sendMessage(JSON.stringify({
+                    from: selectedPosition,
+                    to: [x, y],
+                    user_id: userID,
+                    game_id: GAME_ID,
+                    request_type: "move"
+                }));
             }
         }
 

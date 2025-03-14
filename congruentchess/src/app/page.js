@@ -1,24 +1,25 @@
 "use client"
 import React, { useState } from "react";
-import Image from "next/image";
 import styles from "./page.module.css";
 import ChessBoard from "./components/ChessBoard/chessBoard";
-import ChatComponent from "./components/ChessBoard/chatComponent";
 import Menu from "./components/GameMenu/menu";
 
 export default function Home() {
+  const [userID, _setUserId] = useState(Math.floor(Math.random() * 1000000000000));
+  const [view, setView] = useState("menu");
 
-  `
-  Display a list of open games and their time formats for users to select and join.
-  `
-
-  const [view, setView] = useState("game");
+  const [isJoiningGame, setIsJoiningGame] = useState(false);
 
   return (
     <div className={styles.page}>
       <main className={styles.main}>
-        {view === "game" && <ChessBoard />}
-        {view === "menu" && <Menu />}
+        {view === "game" && <ChessBoard userID={userID} isJoiningGame={isJoiningGame} />}
+        {view === "menu" && <Menu userID={userID} openGameView={ (gameID, isJoining=false) => {
+          // set the hash of the page to gameID
+          window.location.hash = gameID;
+          setIsJoiningGame(isJoining);
+          setView("game");
+        } }  />}
       </main>
       <footer className={styles.footer}>
         <p>Footer</p>
