@@ -13,7 +13,7 @@ export default function Home() {
   return (
     <div className={styles.page}>
       <main className={styles.main}>
-        {view === "game" && <ChessBoard userID={userID} isJoiningGame={isJoiningGame} />}
+        {view === "game" && <ChessBoard userID={userID} isJoiningGame={isJoiningGame} setIsJoiningGame={setIsJoiningGame} />}
         {view === "menu" && <Menu userID={userID} openGameView={ (gameID, isJoining=false) => {
           // set the hash of the page to gameID
           window.location.hash = gameID;

@@ -20,4 +20,5 @@ export const PIECE_FOR_LETTER = {
     "k": "king"
 }
 
-export const SERVER_URL = "localhost";
+// export const SERVER_URL = "localhost";
+export const SERVER_URL = "70.75.92.63";

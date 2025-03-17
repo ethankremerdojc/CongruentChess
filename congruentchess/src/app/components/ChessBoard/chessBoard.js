@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import './chessBoard.css';
 import { DEFAULT_BOARD_FEN, PIECE_FOR_LETTER, SERVER_URL } from './config';
-import { getLegalMoves, decodeFenToBoard, getGameIDFromAnchor, encodeBoardToFen } from './utils';
+import { getLegalMoves, decodeFenToBoard, getGameIDFromAnchor } from './utils';
 
 const Piece = ({ pieceType, color }) => {
     return (
@@ -26,18 +26,21 @@ const Square = ({ black, piece, isHighlighted, onClick }) => {
     );
 };
 
-function selectPiece(piece, color, position, setHighlightedSquares, setSelectedPosition) {
+function selectPiece(piece, color, position, setHighlightedSquares, setselectedFromPosition) {
     const legalMoves = getLegalMoves(piece, color, position);
     setHighlightedSquares(legalMoves);
-    setSelectedPosition(position)
+    setselectedFromPosition(position)
 }
 
-export default function ChessBoard({ userID }) {
+export default function ChessBoard({ userID, isJoiningGame, setIsJoiningGame }) {
 
     const [gameState, setGameState] = useState(DEFAULT_BOARD_FEN);
     const [highlightedSquares, setHighlightedSquares] = useState([]);
-    const [selectedPosition, setSelectedPosition] = useState(null);
-    const [playerTurn, setPlayerTurn] = useState("white");
+    const [selectedFromPosition, setselectedFromPosition] = useState(null);
+    const [selectedToPosition, setselectedToPosition] = useState(null);
+
+    const [assignedColor, setAssignedColor] = useState(null);
+
     const [handlingClick, setHandlingClick] = useState(false);
     const board = decodeFenToBoard(gameState);
     const GAME_ID = getGameIDFromAnchor();
@@ -57,8 +60,8 @@ export default function ChessBoard({ userID }) {
         };
 
         ws.onclose = () => {
-            console.log("WebSocket disconnected...");
-            // setTimeout(() => ws = new WebSocket(`ws://${SERVER_URL}/ws/${GAME_ID}`), 2000);
+            console.log("WebSocket disconnected. Attempting to reconnect");
+            setTimeout(() => ws = new WebSocket(`ws://${SERVER_URL}:8000/ws/${GAME_ID}`), 2000);
         };
     }
 
@@ -68,7 +71,7 @@ export default function ChessBoard({ userID }) {
         }
     };
 
-    if (initialized === false) {
+    if (initialized === false) { // waits 100ms to load ws so it doesn't break.
         setInitialized(true);
         setTimeout(() => {
             const ws = new WebSocket(`ws://${SERVER_URL}:8000/ws/${GAME_ID}`);
@@ -76,8 +79,18 @@ export default function ChessBoard({ userID }) {
         }, 100);
     }
 
-    useEffect(() => {
+    if (ws && isJoiningGame) {
+        setTimeout(() => {
+            sendMessage(JSON.stringify({
+                user_id: userID,
+                game_id: GAME_ID,
+                request_type: "join"
+            }));
+            setIsJoiningGame(false);
+        }, 100);
+    }
 
+    useEffect(() => {
         if (!initialized) {return}
 
         const latestMessage = messages[messages.length - 1];
@@ -88,9 +101,11 @@ export default function ChessBoard({ userID }) {
 
         if (game.board_state) {
             setGameState(game.board_state);
-            setPlayerTurn(game.turn);
             setHighlightedSquares([]);
-            setSelectedPosition(null);
+            setselectedFromPosition(null);
+            setselectedToPosition(null);
+        } else if (game.assigned_colors) {
+            setAssignedColor(game.assigned_colors[userID]);
         }
     },[messages])
 
@@ -122,7 +137,7 @@ export default function ChessBoard({ userID }) {
                     pieceType={pieceRank}
                     color={pieceColor}
                     position={position}
-                    pieceSelected={selectedPosition ? true : false}
+                    pieceSelected={selectedFromPosition ? true : false}
                 />
             );
         }
@@ -132,15 +147,19 @@ export default function ChessBoard({ userID }) {
                 return;
             }
 
+            if (selectedToPosition) { // This will only exist when pending a move
+                return
+            }
+
             setHandlingClick(true);
 
-            if (piece && piece.props.color === playerTurn) {
+            if (piece && piece.props.color === assignedColor) {
                 selectPiece(
                     piece.props.pieceType, 
                     piece.props.color, 
                     piece.props.position, 
                     setHighlightedSquares, 
-                    setSelectedPosition
+                    setselectedFromPosition
                 ) // could probably just pass in the piece object
             } else {
                 attemptPieceMove();
@@ -151,26 +170,27 @@ export default function ChessBoard({ userID }) {
 
         const attemptPieceMove = () => {
             
-            if (!selectedPosition) {
+            if (!selectedFromPosition) {
                 return;
             }
-
-            console.log(selectedPosition, isHighlighted);
 
             if (!isHighlighted) {
                 setHighlightedSquares([]);
-                setSelectedPosition(null);
+                setselectedFromPosition(null);
                 return;
             }
 
-            if (selectedPosition && isHighlighted) {
-                console.log("Sending move")
+            if (selectedFromPosition && isHighlighted) {
+                setselectedToPosition([x, y]);
+                setHighlightedSquares([[x,y], selectedFromPosition])
+
                 sendMessage(JSON.stringify({
-                    from: selectedPosition,
+                    from: selectedFromPosition,
                     to: [x, y],
                     user_id: userID,
                     game_id: GAME_ID,
-                    request_type: "move"
+                    request_type: "move",
+                    color: assignedColor
                 }));
             }
         }
@@ -193,7 +213,10 @@ export default function ChessBoard({ userID }) {
             <div className="chessboard">
                 {Array.from({ length: 64 }, (_, i) => renderSquare(i))}
             </div>
-            <h1>{playerTurn}'s turn</h1>
+            {
+                assignedColor &&
+                <h1>You are playing as {assignedColor}</h1>
+            }
         </div>
     );
 }
