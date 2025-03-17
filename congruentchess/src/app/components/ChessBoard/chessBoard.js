@@ -12,12 +12,14 @@ const Piece = ({ pieceType, color }) => {
     );
 };
 
-const Square = ({ black, piece, isHighlighted, onClick }) => {
+const Square = ({ black, piece, isHighlighted, onClick, previouslySelected }) => {
+
     return (
         <div
             className={[
                 black ? "black-square" : "white-square", 
-                isHighlighted ? "highlighted-square" : ""
+                isHighlighted ? "highlighted-square" : "",
+                previouslySelected && "previously-selected",
             ].join(" ")}
             onClick={onClick}
         >
@@ -26,8 +28,8 @@ const Square = ({ black, piece, isHighlighted, onClick }) => {
     );
 };
 
-function selectPiece(piece, color, position, setHighlightedSquares, setselectedFromPosition) {
-    const legalMoves = getLegalMoves(piece, color, position);
+function selectPiece(piece, color, position, gameState, setHighlightedSquares, setselectedFromPosition) {
+    const legalMoves = getLegalMoves(piece, color, position, gameState);
     setHighlightedSquares(legalMoves);
     setselectedFromPosition(position)
 }
@@ -38,6 +40,7 @@ export default function ChessBoard({ userID, isJoiningGame, setIsJoiningGame }) 
     const [highlightedSquares, setHighlightedSquares] = useState([]);
     const [selectedFromPosition, setselectedFromPosition] = useState(null);
     const [selectedToPosition, setselectedToPosition] = useState(null);
+    const [previousSelections, setPreviousSelections] = useState([]);
 
     const [assignedColor, setAssignedColor] = useState(null);
 
@@ -61,7 +64,10 @@ export default function ChessBoard({ userID, isJoiningGame, setIsJoiningGame }) 
 
         ws.onclose = () => {
             console.log("WebSocket disconnected. Attempting to reconnect");
-            setTimeout(() => ws = new WebSocket(`ws://${SERVER_URL}:8000/ws/${GAME_ID}`), 2000);
+            setTimeout(() => {
+                let newWs = new WebSocket(`ws://${SERVER_URL}:8000/ws/${GAME_ID}`);
+                setWS(newWs);
+            }, 2000);
         };
     }
 
@@ -100,7 +106,9 @@ export default function ChessBoard({ userID, isJoiningGame, setIsJoiningGame }) 
         let game = JSON.parse(latestMessage);
 
         if (game.board_state) {
+            console.log("Game: ", game)
             setGameState(game.board_state);
+            setPreviousSelections(game.previous_selections);
             setHighlightedSquares([]);
             setselectedFromPosition(null);
             setselectedToPosition(null);
@@ -157,7 +165,8 @@ export default function ChessBoard({ userID, isJoiningGame, setIsJoiningGame }) 
                 selectPiece(
                     piece.props.pieceType, 
                     piece.props.color, 
-                    piece.props.position, 
+                    piece.props.position,
+                    board,
                     setHighlightedSquares, 
                     setselectedFromPosition
                 ) // could probably just pass in the piece object
@@ -200,6 +209,7 @@ export default function ChessBoard({ userID, isJoiningGame, setIsJoiningGame }) 
                 black={isBlack}
                 piece={piece}
                 isHighlighted={isHighlighted}
+                previouslySelected={previousSelections.some(([px, py]) => px === x && py === y)}
                 board={board}
                 key={i}
                 onClick={() => { handleSquareClick(piece) }}

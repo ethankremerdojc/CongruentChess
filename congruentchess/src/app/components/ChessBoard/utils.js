@@ -47,10 +47,11 @@ export function encodeBoardToFen(board) {
 // stop player from crossing over their own pieces, these should be disallowed
 // since the user would never want to do this
 
-export function getLegalMoves(pieceType, color, position) {
+export function getLegalMoves(pieceType, color, position, gameState) {
+    console.log(pieceType, color, position);
     switch (pieceType) {
         case "pawn":
-            return getLegalPawnMoves(color, position);
+            return getLegalPawnMoves(color, position, gameState);
         case "rook":
             return getLegalRookMoves(position);
         case "knight":
@@ -66,21 +67,29 @@ export function getLegalMoves(pieceType, color, position) {
     }
 }
 
-function getLegalPawnMoves(color, position) {
+function ownPieceExistsOn(x, y, ownColor, boardState) {
+    if (boardState[y][x] != null) {
+        let pieceColor = boardState[y][x].toUpperCase() === boardState[y][x] ? "white" : "black";
+        return pieceColor === ownColor;
+    }
+    return false;
+}
+
+function getLegalPawnMoves(color, position, boardState) {
     const [x, y] = position;
     const direction = color === "white" ? -1 : 1;
 
     let legalMoves = [];
 
-    legalMoves.push([x, y + direction]);
+    if (!ownPieceExistsOn(x, y + direction, color, boardState)) {
+        legalMoves.push([x, y + direction]);
 
-    if (y === 1 && color === "black" || y === 6 && color === "white") {
-        legalMoves.push([x, y + 2 * direction]);
+        if (!ownPieceExistsOn(x, y + 2 * direction, color, boardState)) {
+            if (y === 1 && color === "black" || y === 6 && color === "white") {
+                legalMoves.push([x, y + 2 * direction]);
+            }
+        }
     }
-
-    // usually we would check if the square is occupied by an enemy piece, 
-    // but we don't care about that here
-    // We want to check however if the square is acutally on the board.
 
     if (x > 0) {
         legalMoves.push([x - 1, y + direction]);
@@ -190,6 +199,8 @@ function getLegalKingMoves(position) {
 
 
 export function getGameIDFromAnchor() {
+    // ex: localhost:9000/#3939912
+
     const anchor = window.location.hash;
     if (anchor.length < 2) {
         return null;

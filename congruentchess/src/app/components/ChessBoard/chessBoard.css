@@ -11,6 +11,10 @@
   z-index: 2;
 }
 
+.previously-selected {
+  background-color: lightblue;
+}
+
 .chessboard {
     display: grid;
     grid-template-columns: repeat(8, 1fr);
