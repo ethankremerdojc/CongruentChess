@@ -41,6 +41,7 @@ export default function ChessBoard({ userID, isJoiningGame, setIsJoiningGame }) 
     const [selectedFromPosition, setselectedFromPosition] = useState(null);
     const [selectedToPosition, setselectedToPosition] = useState(null);
     const [previousSelections, setPreviousSelections] = useState([]);
+    const [previousToPosition, setPreviousToPosition] = useState(null);
 
     const [assignedColor, setAssignedColor] = useState(null);
 
@@ -52,6 +53,8 @@ export default function ChessBoard({ userID, isJoiningGame, setIsJoiningGame }) 
     const [messages, setMessages] = useState([]);
     const [ws, setWS] = useState(null);
     const [initialized, setInitialized] = useState(false);
+
+    const [gameOutcome, setGameOutcome] = useState(false);
     
     if (ws) {
         ws.onopen = (event) => {
@@ -112,6 +115,11 @@ export default function ChessBoard({ userID, isJoiningGame, setIsJoiningGame }) 
             setHighlightedSquares([]);
             setselectedFromPosition(null);
             setselectedToPosition(null);
+
+            if (game.game_state != "INCOMPLETE") {
+                setGameOutcome(game.game_state);
+            }
+
         } else if (game.assigned_colors) {
             setAssignedColor(game.assigned_colors[userID]);
         }
@@ -151,17 +159,21 @@ export default function ChessBoard({ userID, isJoiningGame, setIsJoiningGame }) 
         }
 
         const handleSquareClick = (piece) => {
-            if (handlingClick) {
+            if (handlingClick || selectedToPosition || gameOutcome) {
                 return;
-            }
-
-            if (selectedToPosition) { // This will only exist when pending a move
-                return
             }
 
             setHandlingClick(true);
 
             if (piece && piece.props.color === assignedColor) {
+                if (previousToPosition) {
+                    if (previousToPosition[0] == x && previousToPosition[1] == y) {
+                        if (pieceType.toLowerCase() != "p") {
+                            setHandlingClick(false);
+                            return
+                        }
+                    }
+                }
                 selectPiece(
                     piece.props.pieceType, 
                     piece.props.color, 
@@ -191,7 +203,8 @@ export default function ChessBoard({ userID, isJoiningGame, setIsJoiningGame }) 
 
             if (selectedFromPosition && isHighlighted) {
                 setselectedToPosition([x, y]);
-                setHighlightedSquares([[x,y], selectedFromPosition])
+                setHighlightedSquares([[x,y], selectedFromPosition]);
+                setPreviousToPosition([x, y]);
 
                 sendMessage(JSON.stringify({
                     from: selectedFromPosition,
@@ -224,7 +237,11 @@ export default function ChessBoard({ userID, isJoiningGame, setIsJoiningGame }) 
                 {Array.from({ length: 64 }, (_, i) => renderSquare(i))}
             </div>
             {
-                assignedColor &&
+                gameOutcome &&
+                <h1>Game over: {gameOutcome}</h1>
+            }
+            {
+                !gameOutcome && assignedColor && 
                 <h1>You are playing as {assignedColor}</h1>
             }
         </div>

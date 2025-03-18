@@ -53,7 +53,7 @@ export function getLegalMoves(pieceType, color, position, gameState) {
         case "pawn":
             return getLegalPawnMoves(color, position, gameState);
         case "rook":
-            return getLegalRookMoves(position);
+            return getLegalRookMoves(position, gameState);
         case "knight":
             return getLegalKnightMoves(position);
         case "bishop":
@@ -101,7 +101,7 @@ function getLegalPawnMoves(color, position, boardState) {
     return legalMoves;
 }
 
-function getLegalRookMoves(position) {
+function getLegalRookMoves(position, gameState) {
     const [x, y] = position;
     let legalMoves = [];
 
